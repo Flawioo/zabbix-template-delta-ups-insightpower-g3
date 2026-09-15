@@ -1,0 +1,727 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 4963ccf207824a7b87a49c1f06a20e19
+      name: 'Templates/Power equipment'
+  templates:
+    - uuid: e181378bc7a84a2e888b84b3ac2907a2
+      template: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+      name: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+      description: |
+        Template para UPS Delta com placa InsightPower G3 Mini SNMP Card e sysObjectID .1.3.6.1.4.1.2254.2.5.
+        Baseado na MIB proprietaria Delta UPSv5. OIDs numericos dispensam a instalacao da MIB no Zabbix.
+        Validado inicialmente com o modelo UPA302R2RX0B0B1, 3000 VA / 2700 W, monofasico.
+        Configure a comunidade SNMP na interface SNMP do host; nenhuma credencial e armazenada neste template.
+      vendor:
+        name: 4Firewall
+        version: 1.0.1
+      groups:
+        - name: 'Templates/Power equipment'
+      items:
+        - uuid: 864ebd909b96454e85b47f67f31711a8
+          name: 'SNMP: Availability'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: 'ups.delta.snmp.availability'
+          delay: 1m
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'sysObjectID retornado pela placa. Tambem funciona como teste de disponibilidade SNMP.'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: fba17eff19dc49f085072026e1ed6310
+              expression: 'nodata(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.snmp.availability,5m)=1'
+              name: 'UPS Delta: Sem resposta SNMP por 5 minutos'
+              priority: HIGH
+              description: 'A placa InsightPower deixou de responder via SNMP.'
+        - uuid: 98f3267bc1ac4f828faaf5e60010f5e0
+          name: 'UPS: Fabricante'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.1.1.0
+          key: 'ups.delta.manufacturer'
+          delay: 1h
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+          inventory_link: VENDOR
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 1b094b2731834a4e8d72d5ea14494e51
+          name: 'UPS: Modelo'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.1.2.0
+          key: 'ups.delta.model'
+          delay: 1h
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+          inventory_link: MODEL
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 6ac9bc570335482787fb4ccda43aa148
+          name: 'UPS: Versao do firmware'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.1.3.0
+          key: 'ups.delta.firmware'
+          delay: 1h
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 7e58685f25dd425d836ff0319d865650
+          name: 'Placa SNMP: Versao do agente'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.1.4.0
+          key: 'ups.delta.agent.version'
+          delay: 1h
+          history: 30d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: 9d665444d11248bc81ce62522aa0b50f
+          name: 'UPS: Potencia nominal'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.1.7.0
+          key: 'ups.delta.rating.va'
+          delay: 1h
+          history: 30d
+          units: VA
+          tags:
+            - tag: component
+              value: inventory
+        - uuid: bf43c1e4fbcf427b861847c03ac12984
+          name: 'Entrada: Frequencia L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.4.2.0
+          key: 'ups.delta.input.frequency.l1'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+          triggers:
+            - uuid: c2d376a6f11c47008d12b12c0ce25410
+              expression: 'max(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.input.frequency.l1,5m)>{$UPS.INPUT.FREQ.MAX} or min(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.input.frequency.l1,5m)<{$UPS.INPUT.FREQ.MIN}'
+              name: 'UPS Delta: Frequencia de entrada fora da faixa'
+              priority: WARNING
+        - uuid: 91fa9709e72a47ee8241d4759a436b93
+          name: 'Entrada: Tensao L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.4.3.0
+          key: 'ups.delta.input.voltage.l1'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+          triggers:
+            - uuid: b596b75e7164416d8a13c28d3b89ba13
+              expression: 'max(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.input.voltage.l1,5m)>{$UPS.INPUT.VOLTAGE.MAX} or min(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.input.voltage.l1,5m)<{$UPS.INPUT.VOLTAGE.MIN}'
+              name: 'UPS Delta: Tensao de entrada fora da faixa'
+              priority: WARNING
+        - uuid: cc7e6be19cdb4e888de0c5900a49bbd6
+          name: 'Saida: Fonte de energia'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.1.0
+          key: 'ups.delta.output.source'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS output source'
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: 36fdab1472714e078e729cf19b66e74e
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.source)=2'
+              name: 'UPS Delta: Operando pela bateria'
+              priority: HIGH
+              description: 'A alimentacao da concessionaria falhou e a carga esta sustentada pelas baterias.'
+            - uuid: 353df179941e4395849eb01ba9fd77f9
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.source)=8'
+              name: 'UPS Delta: Saida sem energia'
+              priority: DISASTER
+            - uuid: 03f4df255e094d8286a4b6817e9adfde
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.source)=3 or last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.source)=6'
+              name: 'UPS Delta: Carga operando em bypass'
+              priority: WARNING
+        - uuid: 7bc6d757b6d942e18cdc6768a74d997f
+          name: 'Saida: Frequencia'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.2.0
+          key: 'ups.delta.output.frequency'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: Hz
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: output
+        - uuid: b65b4ef676524e4f84da1d92ab5bc2db
+          name: 'Saida: Tensao L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.4.0
+          key: 'ups.delta.output.voltage.l1'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: output
+        - uuid: 4a92ca05dfac41cb8433b49d875e948b
+          name: 'Saida: Corrente L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.6.0
+          key: 'ups.delta.output.current.l1'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: output
+        - uuid: 724785c0479649e2850e528bb906fd65
+          name: 'Saida: Potencia ativa L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.7.0
+          key: 'ups.delta.output.power.l1'
+          delay: 1m
+          history: 30d
+          units: W
+          tags:
+            - tag: component
+              value: output
+        - uuid: 994d8a8bf2c04c9189db92a2137cdff6
+          name: 'Saida: Carga L1'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.5.8.0
+          key: 'ups.delta.output.load.l1'
+          delay: 1m
+          history: 30d
+          units: '%'
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: fe6d780ba6df406481536d30956f2be0
+              expression: 'min(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.load.l1,5m)>{$UPS.LOAD.WARN}'
+              name: 'UPS Delta: Carga elevada (>{$UPS.LOAD.WARN}%)'
+              priority: WARNING
+            - uuid: 723e58638adc457c82a1a7d53a584085
+              expression: 'min(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.load.l1,5m)>{$UPS.LOAD.HIGH}'
+              name: 'UPS Delta: Sobrecarga critica (>{$UPS.LOAD.HIGH}%)'
+              priority: HIGH
+        - uuid: 20e07fc3f69d45b98adb931046051165
+          name: 'Bateria: Condicao'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.1.0
+          key: 'ups.delta.battery.condition'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS battery condition'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: 0bac920579594abf84322f9456bcce25
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.battery.condition)>1'
+              name: 'UPS Delta: Bateria fraca ou requer substituicao'
+              priority: HIGH
+        - uuid: 6cb83f7313d344528be2cd31fe7d6e8a
+          name: 'Bateria: Estado'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.2.0
+          key: 'ups.delta.battery.status'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS battery status'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: 57694cb17c17475a8c323bbad5a65e4a
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.battery.status)>1'
+              name: 'UPS Delta: Bateria baixa ou esgotada'
+              priority: HIGH
+        - uuid: 76d3d918d86148ca8f8a3d5d5dca2b9c
+          name: 'Bateria: Estado da carga'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.3.0
+          key: 'ups.delta.battery.charge.status'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS battery charge status'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: b13055319f30475e8a5a26ead3949a6d
+          name: 'Bateria: Tempo operando em bateria'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.4.0
+          key: 'ups.delta.battery.seconds.on'
+          delay: 1m
+          history: 30d
+          units: s
+          tags:
+            - tag: component
+              value: battery
+        - uuid: fd6565d10f3a4e2187c334a027cc4f2c
+          name: 'Bateria: Autonomia estimada'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.5.0
+          key: 'ups.delta.battery.runtime'
+          delay: 1m
+          history: 30d
+          units: m
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: 2be8c5d00a504df086b92759dcfc6665
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.output.source)=2 and last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.battery.runtime)<{$UPS.RUNTIME.MIN}'
+              name: 'UPS Delta: Autonomia abaixo de {$UPS.RUNTIME.MIN} minutos'
+              priority: HIGH
+        - uuid: 182371058096439488810644e63d6a55
+          name: 'Bateria: Tensao positiva'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.6.0
+          key: 'ups.delta.battery.voltage.positive'
+          delay: 1m
+          history: 30d
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: 51a371a72c1b4b1283f6a8f3c10baf28
+          name: 'Bateria: Capacidade positiva'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.10.0
+          key: 'ups.delta.battery.capacity.positive'
+          delay: 1m
+          history: 30d
+          units: '%'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: 7c28a5d87f524dc5836e2b9db9cc53bb
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.battery.capacity.positive)<{$UPS.BATTERY.CAPACITY.MIN}'
+              name: 'UPS Delta: Carga da bateria abaixo de {$UPS.BATTERY.CAPACITY.MIN}%'
+              priority: WARNING
+        - uuid: 4b46645d855646e187f6b7c9de46ad5e
+          name: 'Bateria: Modo de carga'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.7.20.0
+          key: 'ups.delta.battery.charge.mode'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS battery charge mode'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: 9b02bf1ae3704bdc88a57b45e9cc2e0d
+          name: 'Teste: Resultado'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.8.2.0
+          key: 'ups.delta.test.result'
+          delay: 10m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS test result'
+          tags:
+            - tag: component
+              value: test
+          triggers:
+            - uuid: 49723f268a7e4d3983563e8380a7d323
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.test.result)>=4'
+              name: 'UPS Delta: Ultimo autoteste apresentou falha'
+              priority: HIGH
+        - uuid: be183081629042098b032569693f37c1
+          name: 'Teste: Detalhes do resultado'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.8.3.0
+          key: 'ups.delta.test.result.detail'
+          delay: 10m
+          history: 30d
+          trends: '0'
+          value_type: TEXT
+          tags:
+            - tag: component
+              value: test
+        - uuid: ae1a87ea071346f38e43c544c748c04f
+          name: 'Alarmes: Resumo'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.32.0
+          key: 'ups.delta.alarm.summary'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm summary'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: 90618942334442448c327e723f8b5476
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.summary)=3'
+              name: 'UPS Delta: Alarme de nivel aviso ativo'
+              priority: WARNING
+            - uuid: 4ef9a23eb2714543804cc61ac20d795d
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.summary)=4'
+              name: 'UPS Delta: Alarme critico ativo'
+              priority: HIGH
+        - uuid: c5a536a1ada545f0838ba816569e9ae2
+          name: 'Alarmes: Entrada fora da faixa'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.2.0
+          key: 'ups.delta.alarm.input.range'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: cb39ef3797dd4dca86d20dfb5efefc10
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.input.range)=1'
+              name: 'UPS Delta: Alimentacao de entrada fora da tolerancia'
+              priority: HIGH
+        - uuid: b1afae2ca14c406a8a74744387bdf2e9
+          name: 'Alarmes: Bateria baixa'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.3.0
+          key: 'ups.delta.alarm.battery.low'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: b9362dcbb1de41ba8558b1857a052b8e
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.battery.low)=1'
+              name: 'UPS Delta: Alarme de bateria baixa'
+              priority: HIGH
+        - uuid: eaf78033ca864280859f54b5e74fbec4
+          name: 'Alarmes: Sobrecarga na saida'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.10.0
+          key: 'ups.delta.alarm.output.overload'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: ffd23283274849148d0fb1c2a6e3d49c
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.output.overload)=1'
+              name: 'UPS Delta: Sobrecarga detectada na saida'
+              priority: HIGH
+        - uuid: 6ba94dad842347158e37971565497cce
+          name: 'Alarmes: Falha do carregador'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.16.0
+          key: 'ups.delta.alarm.charger.fail'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: f3451bdce9c443418dd5b70a2c3ab765
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.charger.fail)=1'
+              name: 'UPS Delta: Falha no carregador de baterias'
+              priority: HIGH
+        - uuid: d594c02d177249f98f400c70e642ebf0
+          name: 'Alarmes: Falha de ventilador'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.17.0
+          key: 'ups.delta.alarm.fan.fail'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: 8d4dc9c8adbc43df890108e50987a810
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.fan.fail)=1'
+              name: 'UPS Delta: Falha de ventilador'
+              priority: HIGH
+        - uuid: d6338dac54a94055802fc83ab4c54c7d
+          name: 'Alarmes: Saida desligada'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.19.0
+          key: 'ups.delta.alarm.output.off'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: 7f656d4134a34eb9890af7aee7623d95
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.output.off)=1'
+              name: 'UPS Delta: Saida da UPS desligada'
+              priority: DISASTER
+        - uuid: 973ab1409626405289609772e61adb63
+          name: 'Alarmes: Temperatura anormal'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2254.2.5.9.13.0
+          key: 'ups.delta.alarm.temperature'
+          delay: 1m
+          history: 30d
+          valuemap:
+            name: 'Delta UPS alarm state'
+          tags:
+            - tag: component
+              value: alarm
+          triggers:
+            - uuid: c7927c6b8ffb42f4873c796436543b44
+              expression: 'last(/Delta UPS InsightPower G3 Mini SNMP Card by SNMP/ups.delta.alarm.temperature)=1'
+              name: 'UPS Delta: Temperatura interna fora dos limites'
+              priority: HIGH
+      macros:
+        - macro: '{$UPS.BATTERY.CAPACITY.MIN}'
+          value: '30'
+          description: 'Percentual minimo de carga da bateria.'
+        - macro: '{$UPS.INPUT.FREQ.MAX}'
+          value: '63'
+          description: 'Frequencia maxima aceitavel na entrada, em Hz.'
+        - macro: '{$UPS.INPUT.FREQ.MIN}'
+          value: '57'
+          description: 'Frequencia minima aceitavel na entrada, em Hz.'
+        - macro: '{$UPS.INPUT.VOLTAGE.MAX}'
+          value: '242'
+          description: 'Tensao maxima aceitavel na entrada, em V.'
+        - macro: '{$UPS.INPUT.VOLTAGE.MIN}'
+          value: '198'
+          description: 'Tensao minima aceitavel na entrada, em V.'
+        - macro: '{$UPS.LOAD.HIGH}'
+          value: '95'
+          description: 'Percentual de carga considerado critico.'
+        - macro: '{$UPS.LOAD.WARN}'
+          value: '80'
+          description: 'Percentual de carga para aviso.'
+        - macro: '{$UPS.RUNTIME.MIN}'
+          value: '15'
+          description: 'Autonomia minima em minutos quando a UPS estiver em bateria.'
+      valuemaps:
+        - uuid: f54b7793bc024377893c0ff71fe2e2f6
+          name: 'Delta UPS alarm state'
+          mappings:
+            - value: '1'
+              newvalue: Ativo
+            - value: '2'
+              newvalue: Normal
+        - uuid: 7350d5981599470c87db5fe3badf3600
+          name: 'Delta UPS alarm summary'
+          mappings:
+            - value: '1'
+              newvalue: Normal
+            - value: '2'
+              newvalue: Informativo
+            - value: '3'
+              newvalue: Aviso
+            - value: '4'
+              newvalue: Alarme
+        - uuid: 9fc71e34eb3d4fef895a8db68430f587
+          name: 'Delta UPS battery condition'
+          mappings:
+            - value: '1'
+              newvalue: Boa
+            - value: '2'
+              newvalue: Fraca
+            - value: '3'
+              newvalue: Substituir
+        - uuid: 097c16f69684434086b7cb60ff10b42f
+          name: 'Delta UPS battery status'
+          mappings:
+            - value: '1'
+              newvalue: Normal
+            - value: '2'
+              newvalue: Baixa
+            - value: '3'
+              newvalue: Esgotada
+        - uuid: e835721391ef4ede8423f1ef61dcaf21
+          name: 'Delta UPS battery charge status'
+          mappings:
+            - value: '1'
+              newvalue: Flutuacao
+            - value: '2'
+              newvalue: Carregando
+            - value: '3'
+              newvalue: Repouso
+            - value: '4'
+              newvalue: Descarregando
+        - uuid: 90c5de4a87aa41708b9367a6eead2fcb
+          name: 'Delta UPS battery charge mode'
+          mappings:
+            - value: '1'
+              newvalue: Nenhum
+            - value: '2'
+              newvalue: Boost
+            - value: '3'
+              newvalue: Flutuacao
+        - uuid: 15a6bc894e2d46b7830b37ec2cbe564c
+          name: 'Delta UPS output source'
+          mappings:
+            - value: '1'
+              newvalue: Normal
+            - value: '2'
+              newvalue: Bateria
+            - value: '3'
+              newvalue: Bypass
+            - value: '4'
+              newvalue: Reducao de tensao
+            - value: '5'
+              newvalue: Elevacao de tensao
+            - value: '6'
+              newvalue: Bypass manual
+            - value: '7'
+              newvalue: Outro
+            - value: '8'
+              newvalue: Sem saida
+            - value: '9'
+              newvalue: Modo economico
+        - uuid: 874294868b5f440582a6e04457130a19
+          name: 'Delta UPS test result'
+          mappings:
+            - value: '1'
+              newvalue: Nenhum teste executado
+            - value: '2'
+              newvalue: Teste aprovado
+            - value: '3'
+              newvalue: Teste em andamento
+            - value: '4'
+              newvalue: Falha no teste geral
+            - value: '5'
+              newvalue: Falha no teste de bateria
+            - value: '6'
+              newvalue: Falha no teste profundo de bateria
+      dashboards:
+        - uuid: 2073382903154e9a848ceae959935be9
+          name: 'Visao geral da UPS'
+          pages:
+            - name: Geral
+              widgets:
+                - type: item
+                  name: 'Fonte da saida'
+                  width: '24'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+                        key: 'ups.delta.output.source'
+                - type: item
+                  name: 'Carga da UPS'
+                  'y': '3'
+                  width: '12'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+                        key: 'ups.delta.output.load.l1'
+                - type: item
+                  name: 'Autonomia estimada'
+                  x: '12'
+                  'y': '3'
+                  width: '12'
+                  height: '3'
+                  fields:
+                    - type: ITEM
+                      name: itemid.0
+                      value:
+                        host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+                        key: 'ups.delta.battery.runtime'
+      tags:
+        - tag: class
+          value: power
+        - tag: target
+          value: ups
+  graphs:
+    - uuid: d66d36350504400280387a500bd1af98
+      name: 'UPS Delta: Tensao de entrada e saida'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+            key: 'ups.delta.input.voltage.l1'
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+            key: 'ups.delta.output.voltage.l1'
+    - uuid: 8f5eb1374a444a708fe7e280dd933390
+      name: 'UPS Delta: Carga e bateria'
+      graph_items:
+        - color: 2774A4
+          item:
+            host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+            key: 'ups.delta.output.load.l1'
+        - sortorder: '1'
+          color: F7941D
+          item:
+            host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+            key: 'ups.delta.battery.capacity.positive'
+    - uuid: 17db7ca30e904f36861755596f361507
+      name: 'UPS Delta: Potencia de saida'
+      graph_items:
+        - color: 6C59DC
+          item:
+            host: 'Delta UPS InsightPower G3 Mini SNMP Card by SNMP'
+            key: 'ups.delta.output.power.l1'
